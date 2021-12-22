@@ -24,7 +24,11 @@ class User(db.Model):
     self.username = username
     self.password = password
 
-
+@app.after_request
+def add_header(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    return response
 @app.route('/', methods=['GET', 'POST'])
 def home():
     return render_template('index.html', CONFIG=CONFIG)
