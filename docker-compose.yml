@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      secret_keyapp_secret_key: 'Small HackerU vulnerable app secret'
+    ports:
+      - "8888:8888" # HTTP
