@@ -1,8 +1,9 @@
-from os import error, popen
+import subprocess
+from os import error, popen, getenv
 from flask import Flask,redirect,request, render_template,session,url_for,session
 from flask_sqlalchemy import SQLAlchemy
 app = Flask (__name__)
-app.secret_key = 'Small HackerU vulnerable app secret'
+app.secret_key = getenv('app_secret_key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///prod.db'
 db = SQLAlchemy(app)
 
@@ -11,8 +12,8 @@ APP_NAME = 'Small HackerU vulnerable app'
 CONFIG = {
     'app_name' : APP_NAME
 }
-def rp(command):
-    return popen(command).read()
+def rp(address):
+    return subprocess.check_output(["nslookup", address]).decode("utf-8")
 class User(db.Model):
   """ Create user table"""
   id = db.Column(db.Integer, primary_key=True)
@@ -23,7 +24,11 @@ class User(db.Model):
     self.username = username
     self.password = password
 
-
+@app.after_request
+def add_header(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    return response
 @app.route('/', methods=['GET', 'POST'])
 def home():
     return render_template('index.html', CONFIG=CONFIG)
@@ -63,7 +68,7 @@ def logout():
   """Logout Form"""
   session['logged_in'] = False
   return redirect(url_for('home'))
-  
+
 
 @app.errorhandler(404)
 def page_not_found_error(error):
@@ -72,11 +77,10 @@ def page_not_found_error(error):
 @app.route('/api/user', methods = ['GET'])
 def evaluate():
     if session['logged_in']:
-        data = request.args.get('user')
-        return str(eval(data))
+        return session['username']
     else:
         return redirect('error.html')
- 
+
 @app.route('/what_ip', methods = ['POST', 'GET'])
 def what_ip():
     address = None
@@ -93,7 +97,7 @@ def what_ip():
              <p><input type = 'text' name = 'address'/></p>
              <p><input type = 'submit' value = 'Lookup'/></p>
           </form>
-         """ + "Result:\n<br>\n" + (rp("nslookup " + address).replace('\n', '\n<br>')  if address else "") + """
+         """ + "Result:\n<br>\n" + (rp(address).replace('\n', '\n<br>')  if address else "") + """
        <a style="text-align:right" href="/">Go back</a>
        </div>
        </body>
