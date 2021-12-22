@@ -16,15 +16,15 @@
 <script>
 window.onload = function() {
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", "/api/user?user=session['username']", false );
+    xmlHttp.open( "GET", "/api/user", false );
     xmlHttp.send( null );
-    document.getElementById('user').innerHTML = xmlHttp.responseText
+    document.getElementById('user').textContent = xmlHttp.responseText
 };
 </script>
 {% else %}
 <h1>Welcome to Small HackerU vulnerable app</h1>
 
-<!-- <a href="/login">Login</a> 
+<!-- <a href="/login">Login</a>
 <a href="/register">Register</a> -->
 <div class="container">
 	<div class="row" style="margin-top: 40px">
